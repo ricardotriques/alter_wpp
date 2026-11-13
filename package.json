@@ -1,0 +1,20 @@
+{
+  "name": "wa-engine",
+  "version": "0.1.0",
+  "description": "Motor de WhatsApp alternativo (Baileys) com API compatível com a WhatsApp Cloud API da Meta",
+  "type": "module",
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node --max-old-space-size=200 src/server.js",
+    "migrate": "node src/migrate.js"
+  },
+  "dependencies": {
+    "baileys": "^7.0.0-rc10",
+    "pg": "^8.13.0",
+    "pino": "^9.5.0",
+    "qrcode": "^1.5.4"
+  }
+}

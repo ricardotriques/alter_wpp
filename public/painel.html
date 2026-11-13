@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>wa-engine · Painel</title>
+<style>
+:root{--bg:#f4f5f2;--card:#fff;--ink:#16201a;--muted:#66736b;--line:#e3e6e1;--brand:#0f7b4f;--brand-ink:#fff;--brand-soft:#e3f3ea;--warn:#a15c00;--warn-soft:#fff2dc;--bad:#b42318;--bad-soft:#fde8e6;--radius:10px}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+button,input,select,textarea{font:inherit;color:inherit}
+.hidden{display:none!important}
+header{background:var(--ink);color:#fff;display:flex;align-items:center;gap:16px;padding:0 20px;height:56px;position:sticky;top:0;z-index:5}
+header b{font-size:15px;letter-spacing:.2px}
+header b span{color:#7fdcae}
+nav{display:flex;gap:4px;flex:1;overflow-x:auto}
+nav button{background:none;border:0;color:#c9d2cc;padding:8px 12px;border-radius:8px;cursor:pointer;white-space:nowrap}
+nav button.on{background:#ffffff1f;color:#fff}
+header a,header .link{color:#c9d2cc;text-decoration:none;font-size:13px;background:none;border:0;cursor:pointer}
+main{max-width:1100px;margin:0 auto;padding:20px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
+.stat small{color:var(--muted);display:block}
+.stat strong{font-size:24px;font-variant-numeric:tabular-nums}
+.bar{display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.bar h2{margin:0;font-size:18px;flex:1}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;background:#fafbf9}
+tr:last-child td{border-bottom:0}
+td .sub{color:var(--muted);font-size:12px}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px}
+.empty{padding:32px;text-align:center;color:var(--muted)}
+.btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 12px;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:#c5ccc6}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.btn.danger{color:var(--bad)}
+.btn.sm{padding:4px 9px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:default}
+.actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:600;background:#eef0ed;color:var(--muted)}
+.pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.pill.ok{background:var(--brand-soft);color:var(--brand)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+select.filter{border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:#fff;width:auto;max-width:220px}
+dialog{border:0;border-radius:14px;padding:0;width:min(480px,94vw);box-shadow:0 20px 60px #0003}
+dialog::backdrop{background:#0b120e80}
+.dlg-h{padding:16px 20px;border-bottom:1px solid var(--line);font-weight:600;font-size:16px}
+.dlg-b{padding:16px 20px;display:grid;gap:12px}
+.dlg-f{padding:12px 20px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px;background:#fafbf9}
+label{display:grid;gap:4px;font-size:13px;font-weight:600}
+label small{font-weight:400;color:var(--muted)}
+input,select,textarea{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:#fff;width:100%}
+input:focus,select:focus,textarea:focus{outline:2px solid #0f7b4f40;border-color:var(--brand)}
+.secret{display:flex;gap:6px;align-items:center}
+.secret code{flex:1;background:#f3f5f2;border:1px solid var(--line);border-radius:8px;padding:8px 10px;word-break:break-all;font-size:12.5px}
+.note{background:var(--warn-soft);color:var(--warn);border-radius:8px;padding:10px 12px;font-size:13px}
+.qr{display:grid;place-items:center;gap:10px;text-align:center;min-height:260px}
+.qr img{width:260px;height:260px}
+.qr .code{font-size:30px;letter-spacing:6px;font-weight:700}
+#login{min-height:100vh;display:grid;place-items:center;padding:20px}
+#login form{background:#fff;border:1px solid var(--line);border-radius:14px;padding:28px;width:min(380px,100%);display:grid;gap:14px}
+#login h1{margin:0;font-size:20px}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;z-index:50;max-width:90vw}
+#toast.err{background:var(--bad)}
+@media (max-width:720px){
+  header{padding:0 12px;gap:8px}
+  header b{display:none}
+  main{padding:14px}
+  thead{display:none}
+  tr{display:block;border-bottom:1px solid var(--line);padding:8px 0}
+  td{display:block;border:0;padding:4px 14px}
+  .actions{justify-content:flex-start}
+}
+</style>
+</head>
+<body>
+
+<section id="login">
+  <form id="loginForm">
+    <h1>wa-engine · Painel</h1>
+    <label>Chave mestra <small>A MASTER_KEY do arquivo .env</small>
+      <input id="loginKey" type="password" autocomplete="current-password" required>
+    </label>
+    <button class="btn primary" type="submit">Entrar</button>
+  </form>
+</section>
+
+<div id="app" class="hidden">
+  <header>
+    <b>wa<span>·</span>engine</b>
+    <nav id="tabs">
+      <button data-tab="linhas" class="on">Linhas</button>
+      <button data-tab="clientes">Clientes</button>
+      <button data-tab="webhooks">Webhooks</button>
+      <button data-tab="templates">Templates</button>
+    </nav>
+    <a id="docsLink" href="docs" target="_blank">API</a>
+    <button class="link" id="logout">Sair</button>
+  </header>
+
+  <main>
+    <div class="stats">
+      <div class="stat"><small>Linhas conectadas</small><strong id="stOpen">–</strong></div>
+      <div class="stat"><small>Linhas com problema</small><strong id="stDown">–</strong></div>
+      <div class="stat"><small>Clientes ativos</small><strong id="stClients">–</strong></div>
+      <div class="stat"><small>Webhooks com falha</small><strong id="stDead">–</strong></div>
+    </div>
+
+    <section data-view="linhas">
+      <div class="bar">
+        <h2>Linhas</h2>
+        <select id="filterClient" class="filter"></select>
+        <button class="btn primary" id="newLine">+ Nova linha</button>
+      </div>
+      <div class="card"><table>
+        <thead><tr><th>Status</th><th>Linha</th><th>Cliente</th><th>Número</th><th></th></tr></thead>
+        <tbody id="linesBody"></tbody>
+      </table></div>
+    </section>
+
+    <section data-view="clientes" class="hidden">
+      <div class="bar">
+        <h2>Clientes</h2>
+        <button class="btn primary" id="newClient">+ Novo cliente</button>
+      </div>
+      <div class="card"><table>
+        <thead><tr><th>Cliente</th><th>Linhas</th><th>Status</th><th></th></tr></thead>
+        <tbody id="clientsBody"></tbody>
+      </table></div>
+    </section>
+
+    <section data-view="webhooks" class="hidden">
+      <div class="bar">
+        <h2>Webhooks com falha</h2>
+        <button class="btn primary" id="retryAll">Reenviar todos</button>
+      </div>
+      <p class="sub" style="color:var(--muted);margin-top:0">Notificações que não puderam ser entregues após 10 tentativas (o sistema do cliente ficou fora do ar ou respondeu com erro).</p>
+      <div class="card"><table>
+        <thead><tr><th>#</th><th>Linha</th><th>Tentativas</th><th>Último erro</th><th>Criado em</th></tr></thead>
+        <tbody id="deadBody"></tbody>
+      </table></div>
+    </section>
+
+    <section data-view="templates" class="hidden">
+      <div class="bar">
+        <h2>Templates</h2>
+        <button class="btn primary" id="newTpl">+ Novo template</button>
+      </div>
+      <div class="card"><table>
+        <thead><tr><th>Nome</th><th>Idioma</th><th>Texto</th><th></th></tr></thead>
+        <tbody id="tplBody"></tbody>
+      </table></div>
+    </section>
+  </main>
+</div>
+
+<dialog id="dlg"><form method="dialog" id="dlgForm">
+  <div class="dlg-h" id="dlgTitle"></div>
+  <div class="dlg-b" id="dlgBody"></div>
+  <div class="dlg-f" id="dlgFoot"></div>
+</form></dialog>
+
+<div id="toast" class="hidden"></div>
+
+<script>
+(() => {
+  const BASE = location.pathname.replace(/\/painel\/?$/, '');
+  let KEY = '';
+  try { KEY = sessionStorage.getItem('wae_master') || ''; } catch {}
+  const state = { clients: [], lines: [], dead: [], templates: [], tab: 'linhas', timer: null };
+  const $ = (s) => document.querySelector(s);
+  const esc = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const fmtDate = (d) => d ? new Date(d).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '';
+  const fmtPhone = (p) => p ? '+' + p : '—';
+
+  async function api(method, path, body) {
+    const res = await fetch(BASE + path, {
+      method,
+      headers: { Authorization: 'Bearer ' + KEY, ...(body ? { 'Content-Type': 'application/json' } : {}) },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      if (res.status === 401 && path.startsWith('/admin')) { logout(); }
+      throw new Error(data.error?.message || 'Erro ' + res.status);
+    }
+    return data;
+  }
+
+  let toastT;
+  function toast(msg, err) {
+    const t = $('#toast');
+    t.textContent = msg; t.className = err ? 'err' : '';
+    clearTimeout(toastT); toastT = setTimeout(() => t.className = 'hidden', 4000);
+  }
+  const guard = (fn) => async (...a) => { try { await fn(...a); } catch (e) { toast(e.message, true); } };
+
+  // ---------- login ----------
+  $('#loginForm').onsubmit = guard(async (e) => {
+    e.preventDefault();
+    KEY = $('#loginKey').value.trim();
+    await api('GET', '/admin/clients');
+    try { sessionStorage.setItem('wae_master', KEY); } catch {}
+    start();
+  });
+  function logout() {
+    KEY = ''; try { sessionStorage.removeItem('wae_master'); } catch {}
+    clearInterval(state.timer);
+    $('#app').classList.add('hidden'); $('#login').classList.remove('hidden');
+  }
+  $('#logout').onclick = logout;
+  $('#docsLink').href = BASE + '/docs';
+
+  // ---------- abas ----------
+  $('#tabs').onclick = (e) => {
+    const b = e.target.closest('button[data-tab]'); if (!b) return;
+    state.tab = b.dataset.tab;
+    document.querySelectorAll('#tabs button').forEach((x) => x.classList.toggle('on', x === b));
+    document.querySelectorAll('[data-view]').forEach((v) => v.classList.toggle('hidden', v.dataset.view !== state.tab));
+    refresh();
+  };
+
+  // ---------- dados ----------
+  async function refresh() {
+    const [c, l, d] = await Promise.all([api('GET', '/admin/clients'), api('GET', '/admin/sessions'), api('GET', '/admin/webhooks/dead')]);
+    state.clients = c.data; state.lines = l.data; state.dead = d.data;
+    if (state.tab === 'templates') state.templates = (await api('GET', '/admin/templates')).data;
+    render();
+  }
+
+  const statusInfo = {
+    open: ['ok', 'Conectada'], qr: ['warn', 'Aguardando QR'], connecting: ['warn', 'Conectando'],
+    closed: ['warn', 'Reconectando'], idle: ['bad', 'QR expirou'], logged_out: ['bad', 'Desconectada'], new: ['', 'Nova'],
+  };
+  const pill = (st) => { const [c, t] = statusInfo[st] || ['', st]; return `<span class="pill ${c}">${esc(t)}</span>`; };
+  const clientName = (id) => id ? (state.clients.find((c) => c.id === id)?.name || id) : '—';
+
+  function render() {
+    $('#stOpen').textContent = state.lines.filter((l) => l.status === 'open').length + ' / ' + state.lines.length;
+    $('#stDown').textContent = state.lines.filter((l) => ['idle', 'logged_out', 'closed'].includes(l.status)).length;
+    $('#stClients').textContent = state.clients.filter((c) => c.active).length;
+    $('#stDead').textContent = state.dead.length;
+
+    // filtro de clientes
+    const f = $('#filterClient'); const cur = f.value;
+    f.innerHTML = '<option value="">Todos os clientes</option><option value="none">Sem cliente</option>' +
+      state.clients.map((c) => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');
+    f.value = cur;
+
+    // linhas
+    const lines = state.lines.filter((l) => !f.value || (f.value === 'none' ? !l.client_id : l.client_id === f.value));
+    $('#linesBody').innerHTML = lines.length ? lines.map((l) => `
+      <tr>
+        <td>${pill(l.status)}</td>
+        <td><b>${esc(l.name)}</b><div class="sub mono">${esc(l.id)}</div></td>
+        <td>${esc(clientName(l.client_id))}</td>
+        <td class="mono">${esc(fmtPhone(l.phone))}${l.push_name ? `<div class="sub">${esc(l.push_name)}</div>` : ''}</td>
+        <td><div class="actions">
+          ${l.status === 'open' ? '' : `<button class="btn sm primary" data-act="qr" data-id="${esc(l.id)}">Conectar</button>`}
+          <button class="btn sm" data-act="editLine" data-id="${esc(l.id)}">Editar</button>
+          <button class="btn sm" data-act="tokenLine" data-id="${esc(l.id)}">Nova chave</button>
+          ${l.status === 'open' ? `<button class="btn sm" data-act="logoutLine" data-id="${esc(l.id)}">Desconectar</button>` : ''}
+          <button class="btn sm danger" data-act="delLine" data-id="${esc(l.id)}">Excluir</button>
+        </div></td>
+      </tr>`).join('') : '<tr><td colspan="5" class="empty">Nenhuma linha ainda. Clique em “+ Nova linha”.</td></tr>';
+
+    // clientes
+    $('#clientsBody').innerHTML = state.clients.length ? state.clients.map((c) => `
+      <tr>
+        <td><b>${esc(c.name)}</b><div class="sub mono">${esc(c.id)}</div>${c.notes ? `<div class="sub">${esc(c.notes)}</div>` : ''}</td>
+        <td>${c.lines_used} / ${c.max_lines}</td>
+        <td>${c.active ? '<span class="pill ok">Ativo</span>' : '<span class="pill bad">Suspenso</span>'}</td>
+        <td><div class="actions">
+          <button class="btn sm" data-act="editClient" data-id="${esc(c.id)}">Editar</button>
+          <button class="btn sm" data-act="keyClient" data-id="${esc(c.id)}">Nova chave</button>
+          <button class="btn sm" data-act="toggleClient" data-id="${esc(c.id)}">${c.active ? 'Suspender' : 'Reativar'}</button>
+          <button class="btn sm danger" data-act="delClient" data-id="${esc(c.id)}">Excluir</button>
+        </div></td>
+      </tr>`).join('') : '<tr><td colspan="4" class="empty">Nenhum cliente ainda. Clique em “+ Novo cliente”.</td></tr>';
+
+    // webhooks
+    $('#deadBody').innerHTML = state.dead.length ? state.dead.map((w) => `
+      <tr><td class="mono">${w.id}</td><td class="mono">${esc(w.session_id)}</td><td>${w.attempts}</td>
+      <td class="mono">${esc(w.last_error)}</td><td>${esc(fmtDate(w.created_at))}</td></tr>`).join('')
+      : '<tr><td colspan="5" class="empty">Nenhuma falha de entrega. 🎉</td></tr>';
+    $('#retryAll').disabled = !state.dead.length;
+
+    // templates
+    $('#tplBody').innerHTML = state.templates.length ? state.templates.map((t) => `
+      <tr><td class="mono"><b>${esc(t.name)}</b></td><td>${esc(t.language)}</td>
+      <td>${t.header ? `<b>${esc(t.header)}</b><br>` : ''}${esc(t.body)}${t.footer ? `<div class="sub">${esc(t.footer)}</div>` : ''}</td>
+      <td><div class="actions">
+        <button class="btn sm" data-act="editTpl" data-name="${esc(t.name)}" data-lang="${esc(t.language)}">Editar</button>
+        <button class="btn sm danger" data-act="delTpl" data-name="${esc(t.name)}" data-lang="${esc(t.language)}">Excluir</button>
+      </div></td></tr>`).join('') : '<tr><td colspan="4" class="empty">Nenhum template. Use {{1}}, {{2}}… para as partes variáveis.</td></tr>';
+  }
+
+  // ---------- diálogo genérico ----------
+  const dlg = $('#dlg');
+  let dlgClose = null;
+  function openDialog({ title, body, buttons, onClose }) {
+    $('#dlgTitle').textContent = title;
+    $('#dlgBody').innerHTML = body;
+    $('#dlgFoot').innerHTML = '';
+    for (const b of buttons) {
+      const el = document.createElement('button');
+      el.type = b.submit ? 'submit' : 'button';
+      el.className = 'btn ' + (b.cls || '');
+      el.textContent = b.label;
+      el.onclick = guard(async (e) => {
+        if (b.submit) { e.preventDefault(); if (!$('#dlgForm').reportValidity()) return; }
+        el.disabled = true;
+        try { const keep = await b.action?.(); if (!keep) dlg.close(); } finally { el.disabled = false; }
+      });
+      $('#dlgFoot').appendChild(el);
+    }
+    dlgClose = onClose || null;
+    dlg.showModal();
+  }
+  dlg.addEventListener('close', () => { const f = dlgClose; dlgClose = null; f?.(); });
+  const val = (id) => $('#' + id)?.value.trim();
+
+  function showSecrets(title, items, note) {
+    openDialog({
+      title,
+      body: `<div class="note">${esc(note || 'Copie e guarde agora: estas informações não serão exibidas novamente.')}</div>` +
+        items.map(([label, v]) => `<label>${esc(label)}<div class="secret"><code>${esc(v)}</code><button type="button" class="btn sm" data-copy="${esc(v)}">Copiar</button></div></label>`).join(''),
+      buttons: [{ label: 'Já guardei', cls: 'primary' }],
+    });
+  }
+  $('#dlgBody').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-copy]'); if (!b) return;
+    navigator.clipboard?.writeText(b.dataset.copy).then(() => { b.textContent = 'Copiado ✓'; }, () => toast('Não foi possível copiar', true));
+  });
+
+  const clientOptions = (sel) => '<option value="">— Sem cliente —</option>' +
+    state.clients.map((c) => `<option value="${esc(c.id)}" ${c.id === sel ? 'selected' : ''} ${!c.active ? 'disabled' : ''}>${esc(c.name)} (${c.lines_used}/${c.max_lines})</option>`).join('');
+
+  // ---------- linhas ----------
+  $('#newLine').onclick = () => openDialog({
+    title: 'Nova linha',
+    body: `
+      <label>Cliente<select id="fClient">${clientOptions($('#filterClient').value !== 'none' ? $('#filterClient').value : '')}</select></label>
+      <label>Id da linha <small>letras, números, - e _ (ex.: festavibe-01). Vira o phone_number_id na API.</small>
+        <input id="fId" required pattern="[A-Za-z0-9][A-Za-z0-9_\\-]{1,40}"></label>
+      <label>Nome<input id="fName" placeholder="FestaVibe Convites"></label>
+      <label>Webhook <small>URL que recebe mensagens e status (pode deixar para depois)</small><input id="fHook" type="url" placeholder="https://..."></label>
+      <label>Conectar por código <small>opcional: número com DDI para receber um código de 8 letras em vez de QR</small><input id="fPair" inputmode="numeric" placeholder="5511999999999"></label>`,
+    buttons: [
+      { label: 'Cancelar' },
+      { label: 'Criar linha', cls: 'primary', submit: true, action: async () => {
+        const r = await api('POST', '/admin/sessions', { id: val('fId'), name: val('fName'), client_id: val('fClient') || null, webhook_url: val('fHook') || null, pairing_phone: val('fPair') || null });
+        await refresh();
+        dlgClose = () => showQr(r.id, [['Token da linha (access_token)', r.access_token], ['Segredo do webhook (webhook_secret)', r.webhook_secret]]);
+      } },
+    ],
+  });
+
+  function lineById(id) { return state.lines.find((l) => l.id === id); }
+
+  function editLine(id) {
+    const l = lineById(id);
+    openDialog({
+      title: 'Editar linha ' + id,
+      body: `
+        <label>Cliente<select id="fClient">${clientOptions(l.client_id)}</select></label>
+        <label>Nome<input id="fName" value="${esc(l.name)}"></label>
+        <label>Webhook<input id="fHook" type="url" value="${esc(l.webhook_url || '')}"></label>
+        <label>Conectar por código <small>número com DDI; vazio = QR</small><input id="fPair" value="${esc(l.pairing_phone || '')}"></label>`,
+      buttons: [
+        { label: 'Cancelar' },
+        { label: 'Salvar', cls: 'primary', submit: true, action: async () => {
+          await api('PATCH', '/admin/sessions/' + encodeURIComponent(id), { name: val('fName'), client_id: val('fClient') || null, webhook_url: val('fHook') || null, pairing_phone: val('fPair') || null });
+          toast('Linha atualizada'); await refresh();
+        } },
+      ],
+    });
+  }
+
+  // QR com atualização automática
+  let qrTimer = null;
+  async function showQr(id, secrets) {
+    const l = lineById(id);
+    if (l && ['idle', 'logged_out', 'closed', 'new'].includes(l.status)) await api('POST', `/admin/sessions/${encodeURIComponent(id)}/connect`);
+    const secretsHtml = secrets ? `<div class="note">Copie e guarde agora: não serão exibidos novamente.</div>` +
+      secrets.map(([label, v]) => `<label>${esc(label)}<div class="secret"><code>${esc(v)}</code><button type="button" class="btn sm" data-copy="${esc(v)}">Copiar</button></div></label>`).join('') : '';
+    openDialog({
+      title: 'Conectar ' + (l?.name || id),
+      body: secretsHtml + '<div class="qr" id="qrBox">Carregando…</div>',
+      buttons: [{ label: 'Fechar', cls: 'primary' }],
+      onClose: () => { clearInterval(qrTimer); refresh().catch(() => {}); },
+    });
+    const tick = async () => {
+      try {
+        const r = await api('GET', `/admin/sessions/${encodeURIComponent(id)}/qr`);
+        const box = $('#qrBox'); if (!box) return;
+        if (r.status === 'open') {
+          box.innerHTML = '<div style="font-size:40px">✅</div><b>Conectada!</b><span class="sub">Pode fechar esta janela.</span>';
+          clearInterval(qrTimer); refresh().catch(() => {});
+        } else if (r.pairing_code) {
+          box.innerHTML = `<span>No celular: <b>Aparelhos conectados › Conectar com número de telefone</b> e digite:</span><span class="code mono">${esc(r.pairing_code)}</span>`;
+        } else if (r.qr_image) {
+          box.innerHTML = `<img src="${r.qr_image}" alt="QR code"><span>WhatsApp › <b>Aparelhos conectados</b> › <b>Conectar aparelho</b></span>`;
+        } else if (['idle', 'logged_out'].includes(r.status)) {
+          box.innerHTML = '<span>O QR expirou.</span><button type="button" class="btn primary" id="qrRetry">Gerar novo QR</button>';
+          $('#qrRetry').onclick = guard(async () => { await api('POST', `/admin/sessions/${encodeURIComponent(id)}/connect`); box.textContent = 'Gerando…'; });
+        } else {
+          box.textContent = 'Gerando QR…';
+        }
+      } catch (e) { toast(e.message, true); }
+    };
+    clearInterval(qrTimer); tick(); qrTimer = setInterval(tick, 3000);
+  }
+
+  const confirmDo = (title, text, label, fn, danger = true) => openDialog({
+    title, body: `<p style="margin:0">${text}</p>`,
+    buttons: [{ label: 'Cancelar' }, { label, cls: danger ? 'primary' : 'primary', action: fn }],
+  });
+
+  // ---------- clientes ----------
+  $('#newClient').onclick = () => openDialog({
+    title: 'Novo cliente',
+    body: `
+      <label>Nome<input id="fName" required placeholder="Buffet Alegria"></label>
+      <label>Id <small>letras, números, - e _ (ex.: buffet-alegria)</small><input id="fId" required pattern="[A-Za-z0-9][A-Za-z0-9_\\-]{1,40}"></label>
+      <label>Limite de linhas<input id="fMax" type="number" min="0" value="1" required></label>
+      <label>Observações<textarea id="fNotes" rows="2" placeholder="Plano, contato, produto…"></textarea></label>`,
+    buttons: [
+      { label: 'Cancelar' },
+      { label: 'Criar cliente', cls: 'primary', submit: true, action: async () => {
+        const r = await api('POST', '/admin/clients', { id: val('fId'), name: val('fName'), max_lines: Number(val('fMax')), notes: val('fNotes') });
+        await refresh();
+        dlgClose = () => showSecrets('Cliente criado: ' + r.name, [['Chave do cliente (api_key)', r.api_key]],
+          'Copie e guarde agora. Com esta chave o sistema do cliente envia mensagens por qualquer linha dele.');
+      } },
+    ],
+  });
+  // gera o id a partir do nome
+  $('#dlgBody').addEventListener('input', (e) => {
+    if (e.target.id !== 'fName' || !$('#fId') || $('#fId').dataset.touched) return;
+    if ($('#dlgTitle').textContent !== 'Novo cliente') return;
+    $('#fId').value = e.target.value.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
+  });
+  $('#dlgBody').addEventListener('keydown', (e) => { if (e.target.id === 'fId') e.target.dataset.touched = '1'; });
+
+  function editClient(id) {
+    const c = state.clients.find((x) => x.id === id);
+    openDialog({
+      title: 'Editar cliente',
+      body: `
+        <label>Nome<input id="fName" value="${esc(c.name)}" required></label>
+        <label>Limite de linhas <small>em uso: ${c.lines_used}</small><input id="fMax" type="number" min="0" value="${c.max_lines}" required></label>
+        <label>Observações<textarea id="fNotes" rows="2">${esc(c.notes || '')}</textarea></label>`,
+      buttons: [
+        { label: 'Cancelar' },
+        { label: 'Salvar', cls: 'primary', submit: true, action: async () => {
+          await api('PATCH', '/admin/clients/' + encodeURIComponent(id), { name: val('fName'), max_lines: Number(val('fMax')), notes: val('fNotes') });
+          toast('Cliente atualizado'); await refresh();
+        } },
+      ],
+    });
+  }
+
+  // ---------- templates ----------
+  function tplDialog(t) {
+    openDialog({
+      title: t ? 'Editar template' : 'Novo template',
+      body: `
+        <label>Nome <small>ex.: convite_evento</small><input id="fName" required value="${esc(t?.name || '')}" ${t ? 'readonly' : ''}></label>
+        <label>Idioma<input id="fLang" value="${esc(t?.language || 'pt_BR')}" ${t ? 'readonly' : ''}></label>
+        <label>Cabeçalho <small>opcional, aparece em negrito</small><input id="fHeader" value="${esc(t?.header || '')}"></label>
+        <label>Texto <small>use {{1}}, {{2}}… para as partes variáveis</small><textarea id="fBody" rows="4" required>${esc(t?.body || '')}</textarea></label>
+        <label>Rodapé <small>opcional</small><input id="fFooter" value="${esc(t?.footer || '')}"></label>`,
+      buttons: [
+        { label: 'Cancelar' },
+        { label: 'Salvar', cls: 'primary', submit: true, action: async () => {
+          await api('POST', '/admin/templates', { name: val('fName'), language: val('fLang'), header: val('fHeader'), body: $('#fBody').value, footer: val('fFooter') });
+          toast('Template salvo'); await refresh();
+        } },
+      ],
+    });
+  }
+  $('#newTpl').onclick = () => tplDialog(null);
+
+  $('#retryAll').onclick = guard(async () => {
+    const r = await api('POST', '/admin/webhooks/retry');
+    toast(r.requeued + ' webhook(s) recolocados na fila'); await refresh();
+  });
+
+  // ---------- ações das tabelas ----------
+  document.querySelector('main').addEventListener('click', guard(async (e) => {
+    const b = e.target.closest('[data-act]'); if (!b) return;
+    const id = b.dataset.id; const enc = encodeURIComponent(id || '');
+    switch (b.dataset.act) {
+      case 'qr': return showQr(id);
+      case 'editLine': return editLine(id);
+      case 'tokenLine': return confirmDo('Nova chave da linha', 'A chave atual para de funcionar na hora. Os sistemas que usam esta linha precisarão da chave nova.', 'Gerar nova chave', async () => {
+        const r = await api('POST', `/admin/sessions/${enc}/rotate-token`);
+        dlgClose = () => showSecrets('Nova chave da linha ' + id, [['Token da linha (access_token)', r.access_token]]);
+      });
+      case 'logoutLine': return confirmDo('Desconectar linha', 'O número será desconectado e precisará ler o QR de novo para voltar.', 'Desconectar', async () => {
+        await api('POST', `/admin/sessions/${enc}/logout`); toast('Linha desconectada'); await refresh();
+      });
+      case 'delLine': return confirmDo('Excluir linha', `Excluir <b>${esc(id)}</b>? O número é desconectado e o histórico apagado.`, 'Excluir', async () => {
+        await api('DELETE', `/admin/sessions/${enc}`); toast('Linha excluída'); await refresh();
+      });
+      case 'editClient': return editClient(id);
+      case 'keyClient': return confirmDo('Nova chave do cliente', 'A chave atual do cliente para de funcionar na hora.', 'Gerar nova chave', async () => {
+        const r = await api('POST', `/admin/clients/${enc}/rotate-key`);
+        dlgClose = () => showSecrets('Nova chave do cliente', [['Chave do cliente (api_key)', r.api_key]]);
+      });
+      case 'toggleClient': {
+        const c = state.clients.find((x) => x.id === id);
+        return confirmDo(c.active ? 'Suspender cliente' : 'Reativar cliente',
+          c.active ? `Enquanto suspenso, <b>${esc(c.name)}</b> não consegue enviar mensagens. Os números continuam conectados.` : `Reativar <b>${esc(c.name)}</b>?`,
+          c.active ? 'Suspender' : 'Reativar', async () => {
+            await api('PATCH', `/admin/clients/${enc}`, { active: !c.active }); await refresh();
+          });
+      }
+      case 'delClient': return confirmDo('Excluir cliente', `Excluir <b>${esc(id)}</b>? Só é possível se ele não tiver linhas.`, 'Excluir', async () => {
+        await api('DELETE', `/admin/clients/${enc}`); toast('Cliente excluído'); await refresh();
+      });
+      case 'editTpl': return tplDialog(state.templates.find((t) => t.name === b.dataset.name && t.language === b.dataset.lang));
+      case 'delTpl': return confirmDo('Excluir template', `Excluir <b>${esc(b.dataset.name)}</b>?`, 'Excluir', async () => {
+        await api('DELETE', `/admin/templates/${encodeURIComponent(b.dataset.name)}/${encodeURIComponent(b.dataset.lang)}`); await refresh();
+      });
+    }
+  }));
+  $('#filterClient').onchange = render;
+
+  async function start() {
+    $('#login').classList.add('hidden'); $('#app').classList.remove('hidden');
+    await refresh();
+    clearInterval(state.timer);
+    state.timer = setInterval(() => { if (!dlg.open && !document.hidden) refresh().catch(() => {}); }, 10000);
+  }
+
+  if (KEY) guard(start)(); else $('#loginKey').focus();
+})();
+</script>
+</body>
+</html>
